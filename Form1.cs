@@ -18,5 +18,13 @@ namespace LocalMiniVideoChat
         {
             InitializeComponent();
         }
+
+        private void metting_btn_Click(object sender, EventArgs e)
+        {
+            this.Hide();
+            new Meeting(new LocalChatShare.Sever()).Show();
+            //new Meeting(new LocalChatShare.Sever()).ShowDialog();
+            this.Show();
+        }
     }
 }

@@ -32,6 +32,9 @@
             this.ip_lbl = new System.Windows.Forms.Label();
             this.users_lb = new System.Windows.Forms.ListBox();
             this.label2 = new System.Windows.Forms.Label();
+            this.send_txt = new System.Windows.Forms.TextBox();
+            this.send_btn = new System.Windows.Forms.Button();
+            this.message_list = new System.Windows.Forms.ListBox();
             this.SuspendLayout();
             // 
             // label1
@@ -57,7 +60,7 @@
             this.users_lb.FormattingEnabled = true;
             this.users_lb.Location = new System.Drawing.Point(15, 69);
             this.users_lb.Name = "users_lb";
-            this.users_lb.Size = new System.Drawing.Size(120, 225);
+            this.users_lb.Size = new System.Drawing.Size(120, 368);
             this.users_lb.TabIndex = 2;
             // 
             // label2
@@ -69,11 +72,39 @@
             this.label2.TabIndex = 3;
             this.label2.Text = "Users";
             // 
+            // send_txt
+            // 
+            this.send_txt.Location = new System.Drawing.Point(141, 417);
+            this.send_txt.Name = "send_txt";
+            this.send_txt.Size = new System.Drawing.Size(565, 20);
+            this.send_txt.TabIndex = 4;
+            // 
+            // send_btn
+            // 
+            this.send_btn.Location = new System.Drawing.Point(713, 415);
+            this.send_btn.Name = "send_btn";
+            this.send_btn.Size = new System.Drawing.Size(75, 23);
+            this.send_btn.TabIndex = 5;
+            this.send_btn.Text = "send";
+            this.send_btn.UseVisualStyleBackColor = true;
+            this.send_btn.Click += new System.EventHandler(this.send_btn_Click);
+            // 
+            // message_list
+            // 
+            this.message_list.FormattingEnabled = true;
+            this.message_list.Location = new System.Drawing.Point(141, 316);
+            this.message_list.Name = "message_list";
+            this.message_list.Size = new System.Drawing.Size(647, 95);
+            this.message_list.TabIndex = 6;
+            // 
             // Meeting
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.message_list);
+            this.Controls.Add(this.send_btn);
+            this.Controls.Add(this.send_txt);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.users_lb);
             this.Controls.Add(this.ip_lbl);
@@ -93,5 +124,8 @@
         private System.Windows.Forms.Label ip_lbl;
         private System.Windows.Forms.ListBox users_lb;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.TextBox send_txt;
+        private System.Windows.Forms.Button send_btn;
+        private System.Windows.Forms.ListBox message_list;
     }
 }

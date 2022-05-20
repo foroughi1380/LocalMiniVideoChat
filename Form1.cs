@@ -30,8 +30,8 @@ namespace LocalMiniVideoChat
         private void button1_Click(object sender, EventArgs e)
         {
             this.Hide();
-            new joinMeet(new LocalChatShare.Client()).Show();
-            //new Meeting(new LocalChatShare.Sever()).ShowDialog();
+            new ConnectDialog().Show();
+            //new ConnectDialog().ShowDialog();
             this.Show();
 
         }

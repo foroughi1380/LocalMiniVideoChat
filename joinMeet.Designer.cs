@@ -29,6 +29,9 @@
         private void InitializeComponent()
         {
             this.label1 = new System.Windows.Forms.Label();
+            this.message_list = new System.Windows.Forms.ListBox();
+            this.send_btn = new System.Windows.Forms.Button();
+            this.send_txt = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // label1
@@ -40,11 +43,39 @@
             this.label1.TabIndex = 0;
             this.label1.Text = "label1";
             // 
+            // message_list
+            // 
+            this.message_list.FormattingEnabled = true;
+            this.message_list.Location = new System.Drawing.Point(15, 322);
+            this.message_list.Name = "message_list";
+            this.message_list.Size = new System.Drawing.Size(647, 95);
+            this.message_list.TabIndex = 9;
+            // 
+            // send_btn
+            // 
+            this.send_btn.Location = new System.Drawing.Point(587, 421);
+            this.send_btn.Name = "send_btn";
+            this.send_btn.Size = new System.Drawing.Size(75, 23);
+            this.send_btn.TabIndex = 8;
+            this.send_btn.Text = "send";
+            this.send_btn.UseVisualStyleBackColor = true;
+            this.send_btn.Click += new System.EventHandler(this.send_btn_Click);
+            // 
+            // send_txt
+            // 
+            this.send_txt.Location = new System.Drawing.Point(15, 423);
+            this.send_txt.Name = "send_txt";
+            this.send_txt.Size = new System.Drawing.Size(565, 20);
+            this.send_txt.TabIndex = 7;
+            // 
             // joinMeet
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(678, 450);
+            this.Controls.Add(this.message_list);
+            this.Controls.Add(this.send_btn);
+            this.Controls.Add(this.send_txt);
             this.Controls.Add(this.label1);
             this.Name = "joinMeet";
             this.Text = "joinMeet";
@@ -58,5 +89,8 @@
         #endregion
 
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.ListBox message_list;
+        private System.Windows.Forms.Button send_btn;
+        private System.Windows.Forms.TextBox send_txt;
     }
 }

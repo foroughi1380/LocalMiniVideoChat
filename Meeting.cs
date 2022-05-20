@@ -39,9 +39,32 @@ namespace LocalMiniVideoChat
                 this.Close();
             }
 
+            this.server.onMessageResive(this.messageResive);
             this.server.onConnected(this.userConnected);
             this.server.onDisconnected(this.userDisconnected);
+            this.server.onRequestLogin(this.requestLogin);
             
+        }
+
+        private string messageResive(string name, string message)
+        {
+            if (this.message_list.InvokeRequired)
+            {
+                this.message_list.Invoke(new MethodInvoker(delegate
+                {
+                    this.message_list.Items.Add(String.Format("{0} : {1}", name, message));
+                }));
+            }
+            else {
+                this.message_list.Items.Add(String.Format("{0} : {1}", name, message));
+            }
+
+            return null;
+        }
+
+        private bool requestLogin(string name)
+        {
+            return MessageBox.Show("do you accept `" + name + "`", "Login request", MessageBoxButtons.YesNo) == DialogResult.Yes;
         }
 
         private string userDisconnected(int id)
@@ -90,7 +113,19 @@ namespace LocalMiniVideoChat
 
         private void Meeting_FormClosed(object sender, FormClosedEventArgs e)
         {
-            this.server.Stop();
+            this.server.end();
         }
+
+        private void send_btn_Click(object sender, EventArgs e)
+        {
+            if (send_txt.Text != "")
+            {
+                this.server.sendMessage(send_txt.Text);
+                this.message_list.Items.Add(String.Format("{0} : {1}", this.server.name, send_txt.Text));
+                send_txt.Clear();
+            }
+        }
+
+
     }
 }

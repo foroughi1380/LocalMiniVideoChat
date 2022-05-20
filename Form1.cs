@@ -22,13 +22,17 @@ namespace LocalMiniVideoChat
         private void metting_btn_Click(object sender, EventArgs e)
         {
             this.Hide();
-            new Meeting(new LocalChatShare.Sever()).Show();
+            new Meeting(new LocalChatShare.Server()).Show();
             //new Meeting(new LocalChatShare.Sever()).ShowDialog();
             this.Show();
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
+            this.Hide();
+            new joinMeet(new LocalChatShare.Client()).Show();
+            //new Meeting(new LocalChatShare.Sever()).ShowDialog();
+            this.Show();
 
         }
     }

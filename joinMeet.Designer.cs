@@ -48,6 +48,7 @@
             this.Controls.Add(this.label1);
             this.Name = "joinMeet";
             this.Text = "joinMeet";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.joinMeet_FormClosed);
             this.Load += new System.EventHandler(this.joinMeet_Load);
             this.ResumeLayout(false);
             this.PerformLayout();

@@ -30,6 +30,8 @@
         {
             this.label1 = new System.Windows.Forms.Label();
             this.ip_lbl = new System.Windows.Forms.Label();
+            this.users_lb = new System.Windows.Forms.ListBox();
+            this.label2 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // label1
@@ -50,11 +52,30 @@
             this.ip_lbl.TabIndex = 1;
             this.ip_lbl.Text = "N/A";
             // 
+            // users_lb
+            // 
+            this.users_lb.FormattingEnabled = true;
+            this.users_lb.Location = new System.Drawing.Point(15, 69);
+            this.users_lb.Name = "users_lb";
+            this.users_lb.Size = new System.Drawing.Size(120, 225);
+            this.users_lb.TabIndex = 2;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(12, 53);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(34, 13);
+            this.label2.TabIndex = 3;
+            this.label2.Text = "Users";
+            // 
             // Meeting
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.users_lb);
             this.Controls.Add(this.ip_lbl);
             this.Controls.Add(this.label1);
             this.Name = "Meeting";
@@ -70,5 +91,7 @@
 
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label ip_lbl;
+        private System.Windows.Forms.ListBox users_lb;
+        private System.Windows.Forms.Label label2;
     }
 }

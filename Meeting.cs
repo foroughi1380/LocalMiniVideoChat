@@ -13,9 +13,11 @@ namespace LocalMiniVideoChat
 {
     public partial class Meeting : Form
     {
-        LocalChatShare.Sever server;
+        Dictionary<int, string> connectedUsers = new Dictionary<int, string>();
+
+        LocalChatShare.Server server;
         Thread thread;
-        public Meeting(LocalChatShare.Sever server){
+        public Meeting(LocalChatShare.Server server){
             this.server = server;
             init();
         }
@@ -36,7 +38,54 @@ namespace LocalMiniVideoChat
                 MessageBox.Show("server not connected");
                 this.Close();
             }
+
+            this.server.onConnected(this.userConnected);
+            this.server.onDisconnected(this.userDisconnected);
             
+        }
+
+        private string userDisconnected(int id)
+        {
+            this.connectedUsers.Remove(id);
+            this.fillConnectedUser();
+            return null;
+        }
+
+        
+
+
+        private string userConnected(int id , string name) {
+            this.connectedUsers.Add(id, name);
+            this.fillConnectedUser();
+
+            return null;
+        }
+
+        private void fillConnectedUser() {
+            if (users_lb.InvokeRequired)
+            {
+                users_lb.Invoke(new MethodInvoker(delegate {
+                    users_lb.Items.Clear();
+                }));
+            }
+            else
+            {
+                users_lb.Items.Clear();
+            }
+
+
+            foreach (string name in this.connectedUsers.Values) {
+                if (users_lb.InvokeRequired)
+                {
+                    users_lb.Invoke(new MethodInvoker(delegate {
+                        users_lb.Items.Add(name);
+                    }));
+                }
+                else
+                {
+                    users_lb.Items.Add(name);
+                }
+            }
         }
 
         private void Meeting_FormClosed(object sender, FormClosedEventArgs e)

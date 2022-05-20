@@ -44,7 +44,7 @@ namespace LocalMiniVideoChat
 
 
 
-            new Thread(() =>
+            var t = new Thread(() =>
             {
                 try
                 {
@@ -68,7 +68,6 @@ namespace LocalMiniVideoChat
                 catch (Exception ex)
                 {
                     MessageBox.Show("Error to Join (host not found or host rejected)");
-                    MessageBox.Show(ex.Message);
                     try
                     {
                         button1.Invoke(new MethodInvoker(delegate
@@ -84,8 +83,10 @@ namespace LocalMiniVideoChat
                     }
                     catch (Exception ee) { }
                 }
-            }).Start();
-                
+            });
+
+            t.IsBackground = true;
+            t.Start();
             
 
         }

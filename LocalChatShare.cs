@@ -264,6 +264,10 @@ namespace LVC
                 if (this.schreenShareThread != null) {
                     this.schreenShareThread.Abort();
                     this.schreenShareThread = null;
+
+                    Command cmd = new Command();
+                    cmd.type = "noshare";
+                    this.broadCast(cmd);
                 }
             }
 
@@ -309,11 +313,11 @@ namespace LVC
             {
                 while (true)
                 {
-                    string requestjson = this.input.ReadLine();
-
-
+                    
                     try
                     {
+                        string requestjson = this.input.ReadLine();
+
                         Command cmd = JsonConvert.DeserializeObject<Command>(requestjson);
                         switch (cmd.type)
                         {
@@ -479,11 +483,10 @@ namespace LVC
 
             private void listen() {
                 while (true) {
-                    string requestjson = this.input.ReadLine();
-
-
                     try
                     {
+                        string requestjson = this.input.ReadLine();
+
                         Command cmd = JsonConvert.DeserializeObject<Command>(requestjson);
                         switch (cmd.type) {
                             case "msg":
@@ -501,10 +504,16 @@ namespace LVC
 
             private void writeToStream() {
                 while (true) {
-                    if (this.commands.Count != 0) {
-                        this.output.WriteLine(JsonConvert.SerializeObject(this.commands.Dequeue()));
-                        this.output.Flush();
+                    try
+                    {
+                        if (this.commands.Count != 0)
+                        {
+                            this.output.WriteLine(JsonConvert.SerializeObject(this.commands.Dequeue()));
+                            this.output.Flush();
+                        }
                     }
+                    catch (Exception e) { continue;  }
+                    
                 }
             }
 

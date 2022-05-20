@@ -45,7 +45,7 @@ namespace LocalMiniVideoChat
         {
             share_lbl.Invoke(new MethodInvoker(delegate
             {
-                //share_lbl.Visible = true;
+                share_lbl.Visible = true;
                 show_pic.Image = null;
 
             }));
@@ -54,7 +54,11 @@ namespace LocalMiniVideoChat
 
         private bool showImage(Image image)
         {
-            //share_lbl.Visible = false;
+            share_lbl.Invoke(new MethodInvoker(delegate
+            {
+                share_lbl.Visible = false;
+            }));
+
             show_pic.Image = image;
             return false;
         }

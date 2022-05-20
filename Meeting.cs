@@ -42,7 +42,6 @@ namespace LocalMiniVideoChat
         private void Meeting_FormClosed(object sender, FormClosedEventArgs e)
         {
             this.server.Stop();
-
         }
     }
 }

@@ -10,6 +10,8 @@ using System.Windows.Forms;
 using System.Collections;
 using System.IO;
 using Newtonsoft.Json;
+using System.Drawing.Imaging;
+using System.Drawing;
 
 
 namespace LVC
@@ -95,8 +97,10 @@ namespace LVC
             private Func<string , string, string> messageListener;
             private Func<int , string> disconnectedListener;
             private Func<string , bool> userAcceptListener;
+            private Func<Image , bool> imageListener;
             #endregion
 
+            private Thread schreenShareThread;
             public override void listen()
             {
 
@@ -206,6 +210,10 @@ namespace LVC
             public void onRequestLogin(Func<string, bool> listener) {
                 this.userAcceptListener = listener;
             }
+            
+            public void onImageRevive(Func<Image, bool> listener) {
+                this.imageListener = listener;
+            }
 
             public void broadCast(Command cmd) {
                 foreach (User u in this.users) {
@@ -227,6 +235,56 @@ namespace LVC
                 this.broadCast(cmd);
                 //this.Stop();
             }
+
+
+            public void startShareScreen() {
+                this.schreenShareThread = new Thread(() => {
+                    while (true) {
+                        Thread.Sleep(50);
+                        byte[] arr = this.CaptureMyScreen();
+                        if (arr != null)
+                        {
+                            if (this.imageListener != null)
+                            {
+                                Image img = Image.FromStream(new MemoryStream(arr));
+                                this.imageListener(img);
+                            }
+                        }
+                        Command cmd = new Command();
+                        cmd.type = "img";
+                        cmd.data = new string[] { Convert.ToBase64String(arr) };
+                        this.broadCast(cmd);
+                    }
+                });
+
+
+                this.schreenShareThread.Start();
+            }
+            public void stopShareScreen() {
+                if (this.schreenShareThread != null) {
+                    this.schreenShareThread.Abort();
+                    this.schreenShareThread = null;
+                }
+            }
+
+
+            private byte[] CaptureMyScreen()
+            {
+                try
+                {
+                    Bitmap captureBitmap = new Bitmap(1024, 768, PixelFormat.Format32bppArgb);
+                    Rectangle captureRectangle = Screen.AllScreens[0].Bounds;
+                    Graphics captureGraphics = Graphics.FromImage(captureBitmap);
+                    captureGraphics.CopyFromScreen(captureRectangle.Left, captureRectangle.Top, 0, 0, captureRectangle.Size);
+                    ImageConverter converter = new ImageConverter();
+                    return (byte[])converter.ConvertTo(captureBitmap, typeof(byte[]));
+
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+            }
         }
 
 
@@ -244,6 +302,8 @@ namespace LVC
 
             private Func<string, string, string> messageListener;
             private Func<string> endListener;
+            private Func<Image, bool> imageListener;
+            private Func<string> noshareListener;
 
             public override void listen()
             {
@@ -267,6 +327,18 @@ namespace LVC
                                 }
                                 this.writeThread.Abort();
                                 this.Stop();
+                                break;
+                            case "img":
+                                
+                                if (this.imageListener != null) {
+                                    Image img = Image.FromStream(new MemoryStream(Convert.FromBase64String(cmd.data[0])));
+                                    this.imageListener(img);
+                                }
+                                break;
+                            case "noshare":
+                                if (this.noshareListener != null) {
+                                    this.noshareListener();
+                                }
                                 break;
                         }
                     }
@@ -349,9 +421,18 @@ namespace LVC
             {
                 this.messageListener = listen;
             }
+
+            public void onImageResive(Func<Image, bool> listen)
+            {
+                this.imageListener = listen;
+            }
             public void onEnd(Func<string> listen)
             {
                 this.endListener = listen;
+            }            
+            public void onEndShow(Func<string> listen)
+            {
+                this.noshareListener = listen;
             }
         }
 

@@ -37,6 +37,26 @@ namespace LocalMiniVideoChat
 
             this.client.onMessageResive(this.messageResive);
             this.client.onEnd(this.end);
+            this.client.onImageResive(this.showImage);
+            this.client.onEndShow(this.endShow);
+        }
+
+        private string endShow()
+        {
+            share_lbl.Invoke(new MethodInvoker(delegate
+            {
+                //share_lbl.Visible = true;
+                show_pic.Image = null;
+
+            }));
+            return null;
+        }
+
+        private bool showImage(Image image)
+        {
+            //share_lbl.Visible = false;
+            show_pic.Image = image;
+            return false;
         }
 
         private string end()

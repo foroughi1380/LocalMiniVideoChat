@@ -35,6 +35,10 @@
             this.send_txt = new System.Windows.Forms.TextBox();
             this.send_btn = new System.Windows.Forms.Button();
             this.message_list = new System.Windows.Forms.ListBox();
+            this.show_pic = new System.Windows.Forms.PictureBox();
+            this.button1 = new System.Windows.Forms.Button();
+            this.share_lbl = new System.Windows.Forms.Label();
+            ((System.ComponentModel.ISupportInitialize)(this.show_pic)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
@@ -97,11 +101,42 @@
             this.message_list.Size = new System.Drawing.Size(647, 95);
             this.message_list.TabIndex = 6;
             // 
+            // show_pic
+            // 
+            this.show_pic.Location = new System.Drawing.Point(141, 53);
+            this.show_pic.Name = "show_pic";
+            this.show_pic.Size = new System.Drawing.Size(647, 257);
+            this.show_pic.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.show_pic.TabIndex = 7;
+            this.show_pic.TabStop = false;
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(141, 9);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(108, 23);
+            this.button1.TabIndex = 8;
+            this.button1.Text = "Start Sharing";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // share_lbl
+            // 
+            this.share_lbl.AutoSize = true;
+            this.share_lbl.Location = new System.Drawing.Point(428, 173);
+            this.share_lbl.Name = "share_lbl";
+            this.share_lbl.Size = new System.Drawing.Size(60, 13);
+            this.share_lbl.TabIndex = 9;
+            this.share_lbl.Text = "No Sharing";
+            // 
             // Meeting
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.share_lbl);
+            this.Controls.Add(this.button1);
+            this.Controls.Add(this.show_pic);
             this.Controls.Add(this.message_list);
             this.Controls.Add(this.send_btn);
             this.Controls.Add(this.send_txt);
@@ -113,6 +148,7 @@
             this.Text = "Meeting";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Meeting_FormClosed);
             this.Load += new System.EventHandler(this.Meeting_Load);
+            ((System.ComponentModel.ISupportInitialize)(this.show_pic)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -127,5 +163,8 @@
         private System.Windows.Forms.TextBox send_txt;
         private System.Windows.Forms.Button send_btn;
         private System.Windows.Forms.ListBox message_list;
+        private System.Windows.Forms.PictureBox show_pic;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Label share_lbl;
     }
 }

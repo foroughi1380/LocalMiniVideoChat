@@ -43,7 +43,14 @@ namespace LocalMiniVideoChat
             this.server.onConnected(this.userConnected);
             this.server.onDisconnected(this.userDisconnected);
             this.server.onRequestLogin(this.requestLogin);
+            this.server.onImageRevive(this.imageRecive);
             
+        }
+
+        private bool imageRecive(Image img)
+        {
+            this.show_pic.Image = img;
+            return false;
         }
 
         private string messageResive(string name, string message)
@@ -126,6 +133,21 @@ namespace LocalMiniVideoChat
             }
         }
 
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (button1.Text.StartsWith("Start"))
+            {
+                share_lbl.Visible = false;
+                this.server.startShareScreen();
+                button1.Text = "Stop Sharing";
+            }
+            else {
+                share_lbl.Visible = true;
+                show_pic.Image = null;
+                this.server.stopShareScreen();
+                button1.Text = "Start Sharing";
 
+            }
+        }
     }
 }

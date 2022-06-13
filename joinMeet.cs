@@ -208,7 +208,6 @@ namespace LocalMiniVideoChat
         }
 
         public string pvMessageRecive(string id , string name , string message) {
-            MessageBox.Show("had aghal kale");
             if (! this.messages.ContainsKey(id))
             {
                 addTab(name, id);

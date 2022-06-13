@@ -121,7 +121,7 @@ namespace LVC
 
                         this.Login(rcm, clinet);
                     }
-                    catch (Exception e) { MessageBox.Show(e.Message); continue;  }
+                    catch (Exception e) { continue;  }
                     
                 }
             }
@@ -178,6 +178,33 @@ namespace LVC
                                 this.disconnectedListener(id);
 
                                 this.broadCastUsers();
+
+                                return null;
+                            });
+
+                            user.onPvMessage((id, n, message) =>
+                            {
+                                foreach (User u in this.users) {
+                                    if (u.id == id) {
+                                        Command cmd = new Command();
+                                        cmd.type = "pvmsg";
+                                        cmd.data = new string[] {
+                                            user.id.ToString(),
+                                            user.name,
+                                            message
+                                        };
+                                        u.sendCommand(cmd);
+
+                                        Command cmd2 = new Command();
+                                        cmd2.type = "pvmsg";
+                                        cmd2.data = new string[] {
+                                            id.ToString(),
+                                            n,
+                                            message
+                                        };
+                                        user.sendCommand(cmd2);
+                                    }
+                                }
 
                                 return null;
                             });
@@ -329,7 +356,7 @@ namespace LVC
 
         public class Client : Connectionable
         {
-            private string name;
+            public string name;
             private bool disconnected = false;
 
             private Queue<Command> commands = new Queue<Command>();
@@ -341,6 +368,7 @@ namespace LVC
             private TcpClient client;
 
             private Func<string, string, string> messageListener;
+            private Func<string, string, string, string> pvMessageListener;
             private Func<string> endListener;
             private Func<Image, bool> imageListener;
             private Func<string> noshareListener;
@@ -390,6 +418,15 @@ namespace LVC
                                     string[] name = JsonConvert.DeserializeObject<string[]>(cmd.data[1]);
 
                                     this.userUpdated(id , name);
+                                }
+                                break;
+                            case "pvmsg":
+                                if (this.pvMessageListener != null) {
+                                    string id = cmd.data[0];
+                                    string name = cmd.data[1];
+                                    string message = cmd.data[2];
+
+                                    this.pvMessageListener(id, name, message);
                                 }
                                 break;
                         }
@@ -457,6 +494,15 @@ namespace LVC
                 this.sendCommand(cmd);
             }
 
+
+            public void sendPvMessage(string id , string message)
+            {
+                Command cmd = new Command();
+                cmd.type = "pvmsg";
+                cmd.data = new string[] { id ,  message };
+                this.sendCommand(cmd);
+            }
+
             public void exit() {
                 Command cmd = new Command();
                 cmd.type = "exit";
@@ -473,6 +519,10 @@ namespace LVC
             public void onMessageResive(Func<string, string, string> listen)
             {
                 this.messageListener = listen;
+            }
+            public void onPvMessageResive(Func<string, string, string, string> listen)
+            {
+                this.pvMessageListener = listen;
             }
 
             public void onImageResive(Func<Image, bool> listen)
@@ -512,6 +562,7 @@ namespace LVC
 
             #region listeners
             private Func<string, string, string> messageListener;
+            private Func<int, string, string, string> pvMessageListener;
             private Func<int,string> exitListener;
             #endregion
 
@@ -547,6 +598,9 @@ namespace LVC
                             case "msg":
                                 this.messageListener(this.name , cmd.data[0]);
                                 break;
+                            case "pvmsg":
+                                this.pvMessageListener(int.Parse(cmd.data[0]), this.name, cmd.data[1]);
+                                break;
                             case "exit":
                                 this.exitListener(this.id);
                                 break;
@@ -577,6 +631,9 @@ namespace LVC
 
             public void onMessage(Func<string, string, string> listen){
                 this.messageListener = listen;
+            }
+            public void onPvMessage(Func<int, string, string, string> listen){
+                this.pvMessageListener = listen;
             }
             
             public void onExit(Func<int,string> listen){

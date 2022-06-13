@@ -16,6 +16,8 @@ namespace LocalMiniVideoChat
     public partial class joinMeet : Form
     {
 
+        private Dictionary<int, string> users = new Dictionary<int, string>();
+
         private LocalChatShare.Client client;
         public joinMeet(LocalChatShare.Client clinet)
         {
@@ -39,6 +41,7 @@ namespace LocalMiniVideoChat
             this.client.onEnd(this.end);
             this.client.onImageResive(this.showImage);
             this.client.onEndShow(this.endShow);
+            this.client.onUsersUpdated(this.usersUpdated);
         }
 
         private string endShow()
@@ -105,5 +108,22 @@ namespace LocalMiniVideoChat
             }
 
         }
+
+        private string usersUpdated(string[] ids, string[] names) {            
+            if (users_lbx.InvokeRequired)
+            {
+                users_lbx.Invoke(new MethodInvoker(delegate {
+                    users_lbx.Items.Clear();
+                    users_lbx.Items.AddRange(names);
+                }));
+            }
+            else {
+                users_lbx.Items.Clear();
+                users_lbx.Items.AddRange(names);
+            }
+            
+            return null;
+        }
+
     }
 }

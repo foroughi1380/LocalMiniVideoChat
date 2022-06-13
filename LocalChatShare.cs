@@ -88,6 +88,7 @@ namespace LVC
 
         public class Server : Connectionable {
             private ArrayList users = new ArrayList();
+            private bool disconnected = false;
 
             private TcpListener listener;
             public string name = "host";
@@ -109,7 +110,7 @@ namespace LVC
                 this.listener.Start();
 
                 
-                while (true) {
+                while (! this.disconnected) {
                     try
                     {
                         TcpClient clinet = this.listener.AcceptTcpClient();
@@ -123,7 +124,6 @@ namespace LVC
                     catch (Exception e) { MessageBox.Show(e.Message); continue;  }
                     
                 }
-
             }
 
             public override void notListen()
@@ -165,11 +165,20 @@ namespace LVC
                                 {
                                     if (u.id == id)
                                     {
+                                        try
+                                        {
+                                            u.Disconnect();
+                                        }
+                                        catch (Exception e) { }
+                                        
                                         this.users.Remove(u);
                                         break;
                                     }
                                 }
                                 this.disconnectedListener(id);
+
+                                this.broadCastUsers();
+
                                 return null;
                             });
 
@@ -182,8 +191,10 @@ namespace LVC
                             acccept.type = "accept";
                             user.sendCommand(acccept);
 
-                            if (this.connectedListener != null)
+                            if (this.connectedListener != null) {
                                 this.connectedListener(user.id, user.name);
+                            }
+                            this.broadCastUsers();
                         }
                         else {
                             Command reject = new Command();
@@ -234,6 +245,7 @@ namespace LVC
                 Command cmd = new Command();
                 cmd.type = "end";
                 this.broadCast(cmd);
+                this.disconnected = true;
                 //this.Stop();
             }
 
@@ -290,12 +302,35 @@ namespace LVC
                     return null;
                 }
             }
+
+            public void broadCastUsers()
+            {
+                Command users = new Command();
+                users.type = "userUpdatedddd";
+                ArrayList ids = new ArrayList();
+                ArrayList names = new ArrayList();
+
+
+                foreach(User user in this.users){
+                    ids.Add(user.id);
+                    names.Add(user.name);
+                }
+
+                users.data = new string[]
+                {
+                    JsonConvert.SerializeObject(ids.ToArray()),
+                    JsonConvert.SerializeObject(names.ToArray()),
+                };
+
+                this.broadCast(users);
+            }
         }
 
 
         public class Client : Connectionable
         {
             private string name;
+            private bool disconnected = false;
 
             private Queue<Command> commands = new Queue<Command>();
             private Thread writeThread;
@@ -310,9 +345,11 @@ namespace LVC
             private Func<Image, bool> imageListener;
             private Func<string> noshareListener;
 
+            private Func<string[], string[], string> userUpdated;
+
             public override void listen()
             {
-                while (true)
+                while (! this.disconnected)
                 {
                     
                     try
@@ -343,6 +380,16 @@ namespace LVC
                             case "noshare":
                                 if (this.noshareListener != null) {
                                     this.noshareListener();
+                                }
+                                break;
+
+                            case "userUpdatedddd":
+                                if (this.userUpdated != null)
+                                {
+                                    string[] id = JsonConvert.DeserializeObject<string[]>(cmd.data[0]);
+                                    string[] name = JsonConvert.DeserializeObject<string[]>(cmd.data[1]);
+
+                                    this.userUpdated(id , name);
                                 }
                                 break;
                         }
@@ -388,7 +435,7 @@ namespace LVC
             }
 
             private void writeToStream() {
-                while (true)
+                while (! this.disconnected)
                 {
                     if (this.commands.Count != 0)
                     {
@@ -419,7 +466,8 @@ namespace LVC
                 output.Flush();
 
                 this.client.Close();
-                this.Stop();
+                this.disconnected = true;
+                //this.Stop();
             }
 
             public void onMessageResive(Func<string, string, string> listen)
@@ -439,6 +487,11 @@ namespace LVC
             {
                 this.noshareListener = listen;
             }
+            
+            public void onUsersUpdated(Func<string[], string[], string> listen)
+            {
+                this.userUpdated = listen;
+            }            
         }
 
 
@@ -454,6 +507,7 @@ namespace LVC
             #region personal variable
             public string name;
             public int id;
+            private bool disconnected = false;
             #endregion
 
             #region listeners
@@ -483,7 +537,7 @@ namespace LVC
             }
 
             private void listen() {
-                while (true) {
+                while (! this.disconnected) {
                     try
                     {
                         string requestjson = this.input.ReadLine();
@@ -495,16 +549,15 @@ namespace LVC
                                 break;
                             case "exit":
                                 this.exitListener(this.id);
-                                this.listenThread.Abort();
                                 break;
                         }
                     }
-                    catch (Exception e) { continue; }
+                    catch (Exception e) {continue; }
                 }
             }
 
             private void writeToStream() {
-                while (true) {
+                while (! this.disconnected) {
                     try
                     {
                         if (this.commands.Count != 0)
@@ -531,12 +584,7 @@ namespace LVC
             }
 
             public void Disconnect() {
-                if (this.writeThread != null) {
-                    this.writeThread.Abort();
-                }
-                if (this.listenThread != null) {
-                    this.listenThread.Abort();
-                }
+                this.disconnected = true;
             }
         }
 

@@ -186,9 +186,10 @@ namespace LVC
                                 this.connectedListener(user.id, user.name);
                         }
                         else {
-                            Command acccept = new Command();
-                            acccept.type = "reject";
-                            user.sendCommand(acccept);
+                            Command reject = new Command();
+                            reject.type = "reject";
+                            user.sendCommand(reject);
+                            user.Disconnect();
                         }
 
                         break;
@@ -529,7 +530,14 @@ namespace LVC
                 this.exitListener = listen;
             }
 
-            
+            public void Disconnect() {
+                if (this.writeThread != null) {
+                    this.writeThread.Abort();
+                }
+                if (this.listenThread != null) {
+                    this.listenThread.Abort();
+                }
+            }
         }
 
     }

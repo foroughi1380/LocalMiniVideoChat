@@ -74,6 +74,12 @@
     <Compile Include="Meeting.Designer.cs">
       <DependentUpon>Meeting.cs</DependentUpon>
     </Compile>
+    <Compile Include="Profile.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Profile.Designer.cs">
+      <DependentUpon>Profile.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="ConnectDialog.resx">
@@ -87,6 +93,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Meeting.resx">
       <DependentUpon>Meeting.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Profile.resx">
+      <DependentUpon>Profile.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

@@ -142,7 +142,7 @@ namespace LVC
                 switch (rcm.type) {
                     case "guest":
                         string name = rcm.data[0];
-                        User user = new User(client, name);
+                        User user = new User(client, name, this);
 
                         if (this.userAcceptListener != null && this.userAcceptListener(name))
                         {
@@ -191,16 +191,20 @@ namespace LVC
                                         cmd.data = new string[] {
                                             user.id.ToString(),
                                             user.name,
-                                            message
+                                            message,
+                                            user.id.ToString(),
+                                            user.name,
                                         };
                                         u.sendCommand(cmd);
 
                                         Command cmd2 = new Command();
                                         cmd2.type = "pvmsg";
                                         cmd2.data = new string[] {
-                                            id.ToString(),
-                                            n,
-                                            message
+                                            u.id.ToString(),
+                                            u.name,
+                                            message,
+                                            user.id.ToString(),
+                                            user.name
                                         };
                                         user.sendCommand(cmd2);
                                     }
@@ -216,6 +220,7 @@ namespace LVC
 
                             Command acccept = new Command();
                             acccept.type = "accept";
+                            acccept.data = new string[] { user.id.ToString() };
                             user.sendCommand(acccept);
 
                             if (this.connectedListener != null) {
@@ -351,12 +356,35 @@ namespace LVC
 
                 this.broadCast(users);
             }
+
+            public void sendUsersToClient(User u) {
+                Command users = new Command();
+                users.type = "userUpdatedddd";
+                ArrayList ids = new ArrayList();
+                ArrayList names = new ArrayList();
+
+
+                foreach (User user in this.users)
+                {
+                    ids.Add(user.id);
+                    names.Add(user.name);
+                }
+
+                users.data = new string[]
+                {
+                    JsonConvert.SerializeObject(ids.ToArray()),
+                    JsonConvert.SerializeObject(names.ToArray()),
+                };
+
+                u.sendCommand(users);
+            }
         }
 
 
         public class Client : Connectionable
         {
             public string name;
+            public string id;
             private bool disconnected = false;
 
             private Queue<Command> commands = new Queue<Command>();
@@ -368,7 +396,7 @@ namespace LVC
             private TcpClient client;
 
             private Func<string, string, string> messageListener;
-            private Func<string, string, string, string> pvMessageListener;
+            private Func<string, string, string, string , string,  string> pvMessageListener;
             private Func<string> endListener;
             private Func<Image, bool> imageListener;
             private Func<string> noshareListener;
@@ -422,11 +450,13 @@ namespace LVC
                                 break;
                             case "pvmsg":
                                 if (this.pvMessageListener != null) {
-                                    string id = cmd.data[0];
-                                    string name = cmd.data[1];
+                                    string pv_id = cmd.data[0];
+                                    string pv_name = cmd.data[1];
                                     string message = cmd.data[2];
+                                    string sender_id = cmd.data[3];
+                                    string sender_name = cmd.data[4];
 
-                                    this.pvMessageListener(id, name, message);
+                                    this.pvMessageListener(pv_id, pv_name, message, sender_id, sender_name);
                                 }
                                 break;
                         }
@@ -457,6 +487,7 @@ namespace LVC
                 if (cmd.type == "accept")
                 {
                     this.name = name;
+                    this.id = cmd.data[0];
                     this.writeThread = new Thread(this.writeToStream);
                     this.writeThread.Start();
                     this.Start();
@@ -516,11 +547,17 @@ namespace LVC
                 //this.Stop();
             }
 
+            public void  requestUsrsList() {
+                Command cmd = new Command();
+                cmd.type = "requestUserList";
+                this.sendCommand(cmd);
+            }
+
             public void onMessageResive(Func<string, string, string> listen)
             {
                 this.messageListener = listen;
             }
-            public void onPvMessageResive(Func<string, string, string, string> listen)
+            public void onPvMessageResive(Func<string, string, string,string , string ,string> listen)
             {
                 this.pvMessageListener = listen;
             }
@@ -572,9 +609,12 @@ namespace LVC
             Thread writeThread;
             #endregion
 
-            public User(TcpClient client, string name) {
+            Server server;
+
+            public User(TcpClient client, string name, Server server) {
                 this.client = client;
                 this.name = name;
+                this.server = server;
                 this.input = new StreamReader(client.GetStream());
                 this.output = new StreamWriter(client.GetStream());
 
@@ -603,6 +643,9 @@ namespace LVC
                                 break;
                             case "exit":
                                 this.exitListener(this.id);
+                                break;
+                            case "requestUserList":
+                                this.server.sendUsersToClient(this);
                                 break;
                         }
                     }

@@ -24,8 +24,10 @@ namespace LocalMiniVideoChat
         private Dictionary<string, messageContain> messages;
 
         private string[] ides = new string[0];
+        private string[] names = new string[0];
 
-        private Dictionary<int, string> users = new Dictionary<int, string>();
+        private ArrayList contacts = new ArrayList();
+        private Dictionary<string, Profile> Profiles = new Dictionary<string, Profile>();
 
         private LocalChatShare.Client client;
         public joinMeet(LocalChatShare.Client clinet)
@@ -47,7 +49,7 @@ namespace LocalMiniVideoChat
             this.messages = new Dictionary<string, messageContain>();
             var mc = new messageContain();
             mc.message = new ArrayList();
-            mc.tp = publictab;
+            mc.tp = null;
             this.messages.Add("public", mc);
 
 
@@ -61,6 +63,9 @@ namespace LocalMiniVideoChat
             this.client.onUsersUpdated(this.usersUpdated);
             this.client.onPvMessageResive(this.pvMessageRecive);
             this.Text = this.client.name;
+
+
+            this.client.requestUsrsList();
         }
 
         private string endShow()
@@ -116,7 +121,7 @@ namespace LocalMiniVideoChat
             else
             {
                 this.message_list.Items.Clear();
-                this.message_list.Items.AddRange(this.messages[tabControl1.SelectedTab.Tag.ToString()].message.ToArray());
+                this.message_list.Items.AddRange(this.messages["public"].message.ToArray());
             }
 
         }
@@ -129,13 +134,15 @@ namespace LocalMiniVideoChat
         private void send_btn_Click(object sender, EventArgs e)
         {
             if (send_txt.Text.Trim() != "") {
-                if (tabControl1.SelectedTab.Tag.ToString() == "public")
-                {
-                    this.client.sendMessage(send_txt.Text.Trim());
-                }
-                else {
-                    this.client.sendPvMessage(tabControl1.SelectedTab.Tag.ToString(), send_txt.Text.Trim());
-                }
+                this.client.sendMessage(send_txt.Text.Trim());
+
+                //if (tabControl1.SelectedTab.Tag.ToString() == "public")
+                //{
+                //    this.client.sendMessage(send_txt.Text.Trim());
+                //}
+                //else {
+                //    this.client.sendPvMessage(tabControl1.SelectedTab.Tag.ToString(), send_txt.Text.Trim());
+                //}
 
                 send_txt.Clear();
             }
@@ -144,16 +151,23 @@ namespace LocalMiniVideoChat
 
         private string usersUpdated(string[] ids, string[] names) {
             this.ides = ids;
+            this.names = names;
             if (users_lbx.InvokeRequired)
             {
-                users_lbx.Invoke(new MethodInvoker(delegate {
-                    users_lbx.Items.Clear();
-                    users_lbx.Items.AddRange(names);
+
+                users_lbx.Invoke(new MethodInvoker(delegate
+                {
+                    //users_lbx.Items.Clear();
+                    //users_lbx.Items.AddRange(names);
+                    usersUpdated(ids, names);
                 }));
             }
             else {
                 users_lbx.Items.Clear();
-                users_lbx.Items.AddRange(names);
+                for (int i = 0; i < ides.Length; i++) {
+                    users_lbx.Items.Add(names[i] + (this.client.id == ids[i] ? " (شما) " : ""));
+                }
+                
             }
             
             return null;
@@ -163,16 +177,34 @@ namespace LocalMiniVideoChat
         {
             if (users_lbx.SelectedIndex > -1) {
                 var id = this.ides[users_lbx.SelectedIndex];
+                if (id == this.client.id) return;
 
-                if (!this.messages.ContainsKey(id))
+                
+
+                if (this.Profiles.ContainsKey(id))
                 {
-                    tabControl1.SelectedTab = this.addTab(users_lbx.SelectedItem.ToString(), id);
+                    this.Profiles[id].Focus();
+                    //tabControl1.SelectedTab = this.addTab(users_lbx.SelectedItem.ToString(), id);
                 }
                 else {
-                    tabControl1.SelectedTab =  this.messages[id].tp;
+                    //tabControl1.SelectedTab =  this.messages[id].tp;
+                    var profile = new Profile(this, this.client, id , this.names[users_lbx.SelectedIndex]);
+                    this.Profiles.Add(id, profile);
+                    profile.Show();
+
+                    if (this.messages.ContainsKey(id)) {
+                        foreach (string message in this.messages[id].message) {
+                            profile.addMessage(message);
+                        }
+                    }
+
                 }
                 
             }
+        }
+
+        public void closeProfile(string id) {
+            this.Profiles.Remove(id);
         }
 
         public TabPage addTab(string name, string tag) {
@@ -186,18 +218,21 @@ namespace LocalMiniVideoChat
                 return null;
             }
             else {
-                TabPage tp = new TabPage();
-                tp.Text = name;
-                tp.Tag = tag;
+                //TabPage tp = new TabPage();
+                //tp.Text = name;
+                //tp.Tag = tag;
+                
+                lbx_contacts.Items.Add(name);
+                contacts.Add(tag);
 
-                tabControl1.TabPages.Add(tp);
+                //tabControl1.TabPages.Add(tp);
                 var mc = new messageContain();
-                mc.tp = tp;
+                //mc.tp = tp;
                 mc.message = new ArrayList();
 
                 this.messages.Add(tag, mc);
 
-                return tp;
+                return null;
             }
 
         }
@@ -207,15 +242,21 @@ namespace LocalMiniVideoChat
             this.fillMessages();
         }
 
-        public string pvMessageRecive(string id , string name , string message) {
-            if (! this.messages.ContainsKey(id))
+        public string pvMessageRecive(string pv_id , string pv_name , string message, string sender_id, string sender_name) {
+            if (! this.messages.ContainsKey(pv_id))
             {
-                addTab(name, id);
+                addTab(pv_name, pv_id);
             }
 
-            while (!this.messages.ContainsKey(id)) { Thread.Sleep(100); }
-            this.messages[id].message.Add(String.Format("{0} : {1}", name, message));
-            this.fillMessages();
+            while (!this.messages.ContainsKey(pv_id)) { Thread.Sleep(100); }
+            var m = String.Format("{0} : {1}", (sender_id == this.client.id) ? "You" : sender_name, message);
+            this.messages[pv_id].message.Add(m);
+
+            if (this.Profiles.ContainsKey(pv_id)) {
+                this.Profiles[pv_id].addMessage(m);
+            }
+
+            //this.fillMessages();
 
             return null;
         }
@@ -223,6 +264,55 @@ namespace LocalMiniVideoChat
         private void send_txt_TextChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private void users_lbx_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void lbx_contacts_DoubleClick(object sender, EventArgs e)
+        {
+            if (lbx_contacts.SelectedIndex > -1)
+            {
+                string id = (string) this.contacts[lbx_contacts.SelectedIndex];
+
+
+
+                if (this.Profiles.ContainsKey(id))
+                {
+                    this.Profiles[id].Focus();
+                    //tabControl1.SelectedTab = this.addTab(users_lbx.SelectedItem.ToString(), id);
+                }
+                else
+                {
+                    //tabControl1.SelectedTab =  this.messages[id].tp;
+                    int index = this.arrayIndexOf(this.ides, id);
+                    var profile = new Profile(this, this.client, id, this.names[index]);
+                    this.Profiles.Add(id, profile);
+                    profile.Show();
+
+                    if (this.messages.ContainsKey(id))
+                    {
+                        foreach (string message in this.messages[id].message)
+                        {
+                            profile.addMessage(message);
+                        }
+                    }
+
+                }
+
+            }
+        }
+
+        public int arrayIndexOf(string[] array, string value) {
+           
+            for (int i = 0; i < array.Length; i++) {
+                if (array[i] == value) {
+                    return i;
+                }
+            }
+            return -1;
         }
     }
 }

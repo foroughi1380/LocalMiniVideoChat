@@ -26,8 +26,8 @@ namespace LocalMiniVideoChat
         private string[] ides = new string[0];
         private string[] names = new string[0];
 
-        private ArrayList contacts = new ArrayList();
-        private Dictionary<string, Profile> Profiles = new Dictionary<string, Profile>();
+        public ArrayList contacts = new ArrayList();
+        public Dictionary<string, Profile> Profiles = new Dictionary<string, Profile>();
 
         private LocalChatShare.Client client;
         public joinMeet(LocalChatShare.Client clinet)
@@ -62,6 +62,7 @@ namespace LocalMiniVideoChat
             this.client.onEndShow(this.endShow);
             this.client.onUsersUpdated(this.usersUpdated);
             this.client.onPvMessageResive(this.pvMessageRecive);
+            this.client.onRequestCall(this.requestCall);
             this.Text = this.client.name;
 
 
@@ -249,7 +250,7 @@ namespace LocalMiniVideoChat
             }
 
             while (!this.messages.ContainsKey(pv_id)) { Thread.Sleep(100); }
-            var m = String.Format("{0} : {1}", (sender_id == this.client.id) ? "You" : sender_name, message);
+            var m = String.Format("{0} : {1}", (sender_id == this.client.id) ? "شما" : sender_name, message);
             this.messages[pv_id].message.Add(m);
 
             if (this.Profiles.ContainsKey(pv_id)) {
@@ -313,6 +314,15 @@ namespace LocalMiniVideoChat
                 }
             }
             return -1;
+        }
+
+        public string requestCall(string name , string id) {
+            this.Invoke(new MethodInvoker(delegate
+            {
+                Ringing ringing = new Ringing(name, id, this.client, this);
+                ringing.Show();
+            }));
+            return null;
         }
     }
 }

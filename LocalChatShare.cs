@@ -378,6 +378,17 @@ namespace LVC
 
                 u.sendCommand(users);
             }
+
+            public User getUser(string id) {
+                foreach (User u in this.users) {
+                    if (u.id.ToString() == id)
+                    {
+                        return u;
+                    }
+                }
+
+                return null;
+            }
         }
 
 
@@ -399,6 +410,11 @@ namespace LVC
             private Func<string, string, string, string , string,  string> pvMessageListener;
             private Func<string> endListener;
             private Func<Image, bool> imageListener;
+            private Func<string, string, string> ringingStartListener;
+            private Func<string, string, string> ringingEndListener;
+            private Func<string, string, string> ringingAcceptListener;
+            private Func<string, string, string> ringingRejectListener;
+            private Func<string, string, string> callEndedListener;
             private Func<string> noshareListener;
 
             private Func<string[], string[], string> userUpdated;
@@ -459,6 +475,52 @@ namespace LVC
                                     this.pvMessageListener(pv_id, pv_name, message, sender_id, sender_name);
                                 }
                                 break;
+
+                            case "requestCall":
+                                if (this.ringingStartListener != null) {
+                                    string name = cmd.data[0];
+                                    string id = cmd.data[1];
+                                    this.ringingStartListener(name, id);
+                                }
+                                break;
+
+                            case "requestCallEnd":
+                                if (this.ringingEndListener != null) {
+                                    string name = cmd.data[0];
+                                    string id = cmd.data[1];
+                                    this.ringingEndListener(name, id);
+                                }
+                                break;
+
+                            case "callEnded":
+                                if (this.callEndedListener != null) {
+                                    string name = cmd.data[0];
+                                    string id = cmd.data[1];
+                                    this.callEndedListener(name, id);
+                                }
+                                break;
+
+                          
+
+                            case "requestCallReject":
+                                if (this.ringingRejectListener != null)
+                                {
+                                    string name = cmd.data[0];
+                                    string id = cmd.data[1];
+                                    this.ringingRejectListener(name, id);
+                                }
+                                break;
+
+                            case "requestCallAccept":
+                                if (this.ringingAcceptListener != null)
+                                {
+                                    string name = cmd.data[0];
+                                    string id = cmd.data[1];
+                                    this.ringingAcceptListener(name, id);
+                                }
+                                break;
+
+
                         }
                     }
                     catch (Exception e) { continue; }
@@ -578,7 +640,73 @@ namespace LVC
             public void onUsersUpdated(Func<string[], string[], string> listen)
             {
                 this.userUpdated = listen;
-            }            
+            }
+
+            public void onRequestCall(Func<string,string, string> listen)
+            {
+                this.ringingStartListener = listen;
+            }
+
+            public void onRequestCallEnded(Func<string,string, string> listen)
+            {
+                this.ringingEndListener = listen;
+            }
+
+            public void onCallAccept(Func<string,string, string> listen)
+            {
+                this.ringingAcceptListener = listen;
+            }
+
+            public void onCallReject(Func<string,string, string> listen)
+            {
+                this.ringingRejectListener = listen;
+            }
+
+            public void onCallEnded(Func<string,string, string> listen)
+            {
+                this.callEndedListener = listen;
+            }
+
+            public void requestCall(string id) {
+                Command cmd = new Command();
+                cmd.type = "requestCall";
+                cmd.data = new string[] { id };
+                this.sendCommand(cmd);
+            }
+
+            public void requestCallEnd(string id)
+            {
+                Command cmd = new Command();
+                cmd.type = "requestCallEnd";
+                cmd.data = new string[] { id };
+                this.sendCommand(cmd);
+            }
+
+
+            public void callReject(string id)
+            {
+                Command cmd = new Command();
+                cmd.type = "requestCallReject";
+                cmd.data = new string[] { id };
+                this.sendCommand(cmd);
+            }
+
+            public void callAccept(string id)
+            {
+                Command cmd = new Command();
+                cmd.type = "requestCallAccept";
+                cmd.data = new string[] { id };
+                this.sendCommand(cmd);
+            }
+
+
+            public void callEnd(string id)
+            {
+                Command cmd = new Command();
+                cmd.type = "callEnded";
+                cmd.data = new string[] { id };
+                this.sendCommand(cmd);
+            }
         }
 
 
@@ -646,6 +774,63 @@ namespace LVC
                                 break;
                             case "requestUserList":
                                 this.server.sendUsersToClient(this);
+                                break;
+                            case "requestCall":
+                                User user = this.server.getUser(cmd.data[0]);
+                                if (user != null) {
+                                    Command c = new Command();
+                                    c.type = "requestCall";
+                                    c.data = new string[] { this.name, this.id.ToString() };
+                                    user.sendCommand(c);
+                                }
+                                break;
+
+                            case "requestCallEnd":
+                                User user2 = this.server.getUser(cmd.data[0]);
+                                if (user2 != null)
+                                {
+                                    Command c = new Command();
+                                    c.type = "requestCallEnd";
+                                    c.data = new string[] { this.name, this.id.ToString() };
+                                    user2.sendCommand(c);
+                                }
+                                break;
+
+                            case "callEnded":
+                                User user3 = this.server.getUser(cmd.data[0]);
+                                if (user3 != null)
+                                {
+                                    Command c = new Command();
+                                    c.type = "callEnded";
+                                    c.data = new string[] { this.name, this.id.ToString() };
+                                    user3.sendCommand(c);
+                                }
+
+                                break;
+
+
+                            case "requestCallReject":
+                                User user4 = this.server.getUser(cmd.data[0]);
+                                if (user4 != null)
+                                {
+                                    Command c = new Command();
+                                    c.type = "requestCallReject";
+                                    c.data = new string[] { this.name, this.id.ToString() };
+                                    user4.sendCommand(c);
+                                }
+
+                                break;
+
+                            case "requestCallAccept":
+                                User user5 = this.server.getUser(cmd.data[0]);
+                                if (user5 != null)
+                                {
+                                    Command c = new Command();
+                                    c.type = "requestCallAccept";
+                                    c.data = new string[] { this.name, this.id.ToString() };
+                                    user5.sendCommand(c);
+                                }
+
                                 break;
                         }
                     }

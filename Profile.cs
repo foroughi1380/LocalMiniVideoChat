@@ -18,6 +18,7 @@ namespace LocalMiniVideoChat
         LocalChatShare.Client client;
         string id;
         string name;
+        Call call;
         public Profile(joinMeet meet , LocalChatShare.Client client, string id, string name)
         {
             this.meet = meet;
@@ -29,6 +30,9 @@ namespace LocalMiniVideoChat
 
         private void Profile_FormClosed(object sender, FormClosedEventArgs e)
         {
+            if (this.call != null) {
+                this.call.end();
+            }
             this.meet.closeProfile(this.id);
         }
 
@@ -62,6 +66,65 @@ namespace LocalMiniVideoChat
         private void lbx_chat_DoubleClick(object sender, EventArgs e)
         {
             
+        }
+
+        private void btn_call_Click(object sender, EventArgs e)
+        {
+            if (this.btn_call.Text == "تماس")
+            {
+                this.client.requestCall(this.id);
+                this.btn_call.Text = "قطع تماس";
+
+                this.client.onCallAccept(this.CallAccept);
+                this.client.onCallReject(this.CallRejct);
+            }
+            else {
+                if (this.call != null)
+                {
+                    this.call.end();
+                }
+                else {
+                    this.client.requestCallEnd(this.id);
+                }
+                this.btn_call.Text = "تماس";
+
+            }
+
+        }
+
+
+        public string CallAccept(string name, string id) {
+            this.showCall();
+            return null;
+        }
+
+        public void showCall() {
+            this.Invoke(new MethodInvoker(delegate {
+                this.btn_call.Text = "قطع تماس";
+                this.call = new Call(this.name, this.id, this.client, this);
+                this.call.Show();
+            }));
+        }
+
+        public string CallRejct(string name , string id) {
+            
+            this.Invoke(new MethodInvoker(delegate
+            {
+                this.btn_call.Text = "تماس";
+            }));
+            MessageBox.Show("تماس رد شد");
+            return null;
+        }
+
+
+        public void callEnded() {
+            this.Invoke(new MethodInvoker(delegate
+            {
+                this.btn_call.Text = "تماس";
+            }));
+            
+            this.client.onCallAccept(null);
+            this.client.onCallReject(null);
         }
     }
 }

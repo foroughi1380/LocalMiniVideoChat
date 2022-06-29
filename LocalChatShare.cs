@@ -415,6 +415,8 @@ namespace LVC
             private Func<string, string, string> ringingAcceptListener;
             private Func<string, string, string> ringingRejectListener;
             private Func<string, string, string> callEndedListener;
+            private Func<string, Image, string> cameraShareListener;
+            private Func<string, string> cameraEndListener;
             private Func<string> noshareListener;
 
             private Func<string[], string[], string> userUpdated;
@@ -517,6 +519,25 @@ namespace LVC
                                     string name = cmd.data[0];
                                     string id = cmd.data[1];
                                     this.ringingAcceptListener(name, id);
+                                }
+                                break;
+
+                            case "cameraEnd":
+                                if (this.cameraEndListener != null)
+                                {
+                                    string name = cmd.data[0];
+                                    string id = cmd.data[1];
+                                    this.cameraEndListener(id);
+                                }
+                                break;
+
+                            case "cameraImage":
+                                if (this.cameraShareListener != null)
+                                {
+                                    string name = cmd.data[0];
+                                    string id = cmd.data[1];
+                                    Image img = Image.FromStream(new MemoryStream(Convert.FromBase64String(cmd.data[2]))); ;
+                                    this.cameraShareListener(id , img);
                                 }
                                 break;
 
@@ -647,6 +668,16 @@ namespace LVC
                 this.ringingStartListener = listen;
             }
 
+            public void onCameraImage(Func<string, Image, string> listen)
+            {
+                this.cameraShareListener = listen;
+            }
+
+            public void onCameraEnd(Func<string,string> listen)
+            {
+                this.cameraEndListener = listen;
+            }
+
             public void onRequestCallEnded(Func<string,string, string> listen)
             {
                 this.ringingEndListener = listen;
@@ -704,6 +735,25 @@ namespace LVC
             {
                 Command cmd = new Command();
                 cmd.type = "callEnded";
+                cmd.data = new string[] { id };
+                this.sendCommand(cmd);
+            }
+
+            public void sendCameraImage(string id , Bitmap image) {
+
+                ImageConverter converter = new ImageConverter();
+                byte[] arr = (byte[])converter.ConvertTo(image, typeof(byte[]));
+
+
+                Command cmd = new Command();
+                cmd.type = "cameraImage";
+                cmd.data = new string[] { id , Convert.ToBase64String(arr)};
+                this.sendCommand(cmd);
+            }
+
+            public void stopCameraImage(string id) {
+                Command cmd = new Command();
+                cmd.type = "cameraEnd";
                 cmd.data = new string[] { id };
                 this.sendCommand(cmd);
             }
@@ -829,6 +879,30 @@ namespace LVC
                                     c.type = "requestCallAccept";
                                     c.data = new string[] { this.name, this.id.ToString() };
                                     user5.sendCommand(c);
+                                }
+
+                                break;
+                            case "cameraImage":
+                                User user6 = this.server.getUser(cmd.data[0]);
+                                if (user6 != null)
+                                {
+                                    Command c = new Command();
+                                    c.type = "cameraImage";
+                                    c.data = new string[] { this.name, this.id.ToString() , cmd.data[1]};
+                                    user6.sendCommand(c);
+                                }
+
+                                break;
+
+
+                            case "cameraEnd":
+                                User user7 = this.server.getUser(cmd.data[0]);
+                                if (user7 != null)
+                                {
+                                    Command c = new Command();
+                                    c.type = "cameraEnd";
+                                    c.data = new string[] { this.name, this.id.ToString()};
+                                    user7.sendCommand(c);
                                 }
 
                                 break;
